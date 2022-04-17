@@ -1,0 +1,12 @@
+Index: README.md
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/README.md b/README.md
+deleted file mode 100644
+--- a/README.md	(revision b42f98a1e4e94db63bff3932f85c452be3224788)
++++ /dev/null	(revision b42f98a1e4e94db63bff3932f85c452be3224788)
+@@ -1,1 +0,0 @@
+-# kinozal
+\ No newline at end of file
