@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+
+  web:
+    build:
+       context: ./app
+       dockerfile: Dockerfile
+    container_name: web
+    volumes:
+      - static_volume:/home/app/static
+      - media_volume:/home/app/media
+    depends_on:
+      - postgres
+    env_file:
+      - .env_deploy
+    networks:
+      - django-network
+
+  postgres:
+    image: postgres:13.0-alpine
+    container_name: postgres
+    volumes:
+      - postgres_volume:/var/lib/postgresql/data/
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - 5432:5432
+    env_file:
+      - .env_deploy
+    networks:
+      - django-network
+
+  nginx_django:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: nginx_django
+    volumes:
+      - static_volume:/home/app/static
+      - media_volume:/home/app/media
+    ports:
+      - 5555:80
+    networks:
+      - django-network
+
+
+
+volumes:
+  postgres_volume:
+  static_volume:
+  media_volume:
+
+networks:
+  django-network:
+    driver: bridge
+
+
