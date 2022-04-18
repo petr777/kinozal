@@ -43,8 +43,6 @@ services:
     networks:
       - django-network
 
-
-
 volumes:
   postgres_volume:
   static_volume:
