@@ -20,11 +20,11 @@ class Film(BaseModel):
     genre: Optional[List[str]] = []
     title: str
     description: Optional[str] = None
-    # director: List[str] = []
-    # actors: List[Person] = []
-    # actors_names: List = []
-    # writers: List[Person] = []
-    # writers_names: List = []
+    director: List[str] = []
+    actors: List[Person] = []
+    actors_names: List = []
+    writers: List[Person] = []
+    writers_names: List = []
 
 
 @router.get('/{film_id}', response_model=Film)

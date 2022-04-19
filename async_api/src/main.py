@@ -45,7 +45,7 @@ app.include_router(film.router, prefix='/api/v1/films', tags=['film'])
 if __name__ == '__main__':
     uvicorn.run(
         'main:app',
-        host='127.0.0.1',
+        host='0.0.0.0',
         port=8000,
         log_config=LOGGING,
         log_level=logging.DEBUG,
