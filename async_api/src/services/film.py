@@ -3,11 +3,13 @@ from typing import Optional
 
 from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
-from fastapi import Depends
+from fastapi import Depends, Query
 
 from db.elastic import get_elastic
 from db.redis import get_redis
 from models.film import Film
+
+import json
 
 FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5  # 5 минут
 
@@ -16,6 +18,42 @@ class FilmService:
     def __init__(self, redis: Redis, elastic: AsyncElasticsearch):
         self.redis = redis
         self.elastic = elastic
+
+
+    async def get_many(self, params, sort):
+        q = dict()
+
+        q["query"] = {
+                'multi_match': {
+                    'query': f'{params.query}', 'fuzziness': 'auto',
+                    'fields': [
+                        'title',
+                        'description',
+                        'genre'
+                    ]
+                }
+            }
+        q['size'] = params.limit
+        print(sort)
+        # print(type(sort))
+        # print(json.loads(sort))
+        import ast
+        ast.literal_eval(sort)
+        # q['sort'] = [
+        #     {s[0]: {f'{s[0]}.raw': s[1]}}
+        #     for s in json.loads(sort)
+        # ]
+
+        docs = await self.elastic.search(
+            index='movies',
+            body=q
+        )
+        result = [
+            Film(**doc['_source'])
+            for doc in docs['hits']['hits']
+        ]
+        return result
+
 
     # get_by_id возвращает объект фильма. Он опционален, так как фильм может отсутствовать в базе
     async def get_by_id(self, film_id: str) -> Optional[Film]:

@@ -1,10 +1,10 @@
 from http import HTTPStatus
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional, List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from services.film import FilmService, get_film_service
-from pydantic.fields import Field
+
 
 router = APIRouter()
 
@@ -12,7 +12,6 @@ router = APIRouter()
 class Person(BaseModel):
     id: str
     name: str
-
 
 class Film(BaseModel):
     id: str
@@ -33,4 +32,21 @@ async def film_details(film_id: str, film_service: FilmService = Depends(get_fil
     if not film:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='film not found')
     return Film(**film.dict())
+
+
+class ParamsModel(BaseModel):
+    filter: Optional[str]
+    query: Optional[str]
+    page: Optional[int] = 1
+    skip: Optional[int] = 0
+    limit: Optional[int] = Field(default=25)
+
+@router.get('/', response_model=List[Film])
+async def film_many(
+        params: ParamsModel = Depends(),
+        sort: str = Query(default=""),
+        film_service: FilmService = Depends(get_film_service)) -> List[Film]:
+    films = await film_service.get_many(params, sort)
+
+    return [Film(**film.dict()) for film in films]
 
