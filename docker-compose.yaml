@@ -1,0 +1,110 @@
+version: '3.8'
+
+services:
+
+############# Generals #############
+  postgres:
+    image: postgres:13.0-alpine
+    container_name: postgres
+    volumes:
+      - postgres_volume:/var/lib/postgresql/data/
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - 5432:5432
+    networks:
+      - backend
+    env_file:
+      - .env
+
+  elasticsearch:
+    image: elasticsearch:7.17.1
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=false
+      - ES_JAVA_OPTS=-Xmx512m -Xms512m
+    ports:
+      - 9200:9200
+    networks:
+      - backend
+    env_file:
+      - .env
+
+  redis:
+    image: redis:6.2.6
+    container_name: redis
+    ports:
+      - 6379:6379
+    command:
+      - redis-server
+    networks:
+      - backend
+    env_file:
+      - .env
+
+############# Nginx #############
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: nginx_django
+    volumes:
+      - static_volume:/home/app/static
+      - media_volume:/home/app/media
+    ports:
+      - 5555:80 # admin_panel
+      - 80:80 # async_api
+    networks:
+      - backend
+
+############# admin_panel #############
+  web:
+    build:
+       context: ./admin_panel/app
+       dockerfile: Dockerfile
+    container_name: web
+    volumes:
+      - static_volume:/home/app/static
+      - media_volume:/home/app/media
+    depends_on:
+      - postgres
+    env_file:
+      - .env
+    networks:
+      - backend
+
+############# asymc_api #############
+  api:
+    build:
+      context: ./async_api/src
+      dockerfile: Dockerfile
+    container_name: api
+    expose:
+      - 8000
+    networks:
+      - backend
+    env_file:
+      - .env
+
+############# etl ###################
+  etl:
+    build:
+      context: ./etl
+      dockerfile: Dockerfile
+    container_name: etl
+    env_file:
+      - .env
+    networks:
+      - backend
+
+volumes:
+  postgres_volume:
+  static_volume:
+  media_volume:
+
+networks:
+  backend:
+    driver: bridge
+
+

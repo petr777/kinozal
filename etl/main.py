@@ -18,7 +18,6 @@ def create_index(es_db, index, settings, mappings):
 
 
 if __name__ == '__main__':
-    print(es_dsl)
     with ElasticBase(es_dsl) as es_db:
         create_index(
             es_db,
