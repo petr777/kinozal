@@ -21,10 +21,15 @@ class Film(BaseModel):
     title: str
     description: Optional[str] = None
     director: List[str] = []
-    actors: List[Person] = []
     actors_names: List = []
-    writers: List[Person] = []
     writers_names: List = []
+
+
+class QueryFilms(BaseModel):
+    sort: Optional[str]
+    page: Optional[str]
+    filters: Optional[str]
+    query: Optional[str]
 
 
 @router.get('/{film_id}', response_model=Film)
@@ -34,3 +39,11 @@ async def film_details(film_id: str, film_service: FilmService = Depends(get_fil
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='film not found')
     return Film(**film.dict())
 
+
+@router.get('/', response_model=List[Film])
+async def films(
+        film_service: FilmService = Depends(get_film_service),
+        query_films: QueryFilms = Depends()
+):
+    films = await film_service.get_many(query_films)
+    return [Film(**film) for film in films]
