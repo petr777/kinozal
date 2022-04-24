@@ -48,7 +48,7 @@ services:
     build:
       context: ./nginx
       dockerfile: Dockerfile
-    container_name: nginx_django
+    container_name: django
     volumes:
       - static_volume:/home/app/static
       - media_volume:/home/app/media
